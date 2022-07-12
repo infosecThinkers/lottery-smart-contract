@@ -3,14 +3,13 @@ pragma solidity ^0.8.7;
 
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract Lottery is VRFConsumerBaseV2 {
+contract Lottery is VRFConsumerBaseV2 , Ownable {
     VRFCoordinatorV2Interface COORDINATOR;
 
-    //Public scope because it should be shown who the lottery manager is
-    address public manager;
 
-    //Same situation as for the manager variable
+    //Same situation as for the owner variable
     address[] public players;
 
     uint256 public ticketPrice;
@@ -45,12 +44,9 @@ contract Lottery is VRFConsumerBaseV2 {
 
     uint256[] public s_randomWords;
     uint256 public s_requestId;
-    address s_owner;
 
     constructor() VRFConsumerBaseV2(vrfCoordinator) {
         COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator);
-        s_owner = msg.sender;
-        manager = msg.sender;
         ticketPrice = .001 ether;
         //Create a new subscription when you deploy the contract.
         createNewSubscription();
@@ -108,19 +104,4 @@ contract Lottery is VRFConsumerBaseV2 {
         return players;
     }
 
-    modifier onlyOwner() {
-        require(
-            msg.sender == manager,
-            "Access denied! You have to be the manager of this lottery"
-        );
-        _;
-    }
-
-    modifier notOwner() {
-        require(
-            msg.sender != manager,
-            "Access denied. The manager cant participate in this lottery"
-        );
-        _;
-    }
 }
